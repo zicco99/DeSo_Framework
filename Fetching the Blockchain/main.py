@@ -29,7 +29,7 @@ def http_request(type,block_hash):
             try_num+=1
 
 
-# MY BEST MASTERPIECE -> ELEGANT AS F... hahaha (V.3 - iterative check including an enough integrity check)
+# MY BEST MASTERPIECE -> ELEGANT AS F... hahaha (V.3 - iterative check including a good enough integrity checker)
 
 def iterative_fetch():
     #Check integrity of local blockchain
