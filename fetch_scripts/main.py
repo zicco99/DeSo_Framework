@@ -1,10 +1,13 @@
+from multiprocessing import current_process
+import os
 import sys
+from threading import Thread
 import time
 import requests
 import json
 import random
 
-from databaseDTO import block_is_in_db, block_is_intirely_inserted, block_is_intirely_inserted_by_height, bootstrap_db, clean_insert, close_db, dirty_insert, get_prev_block, max_block_h, min_block_h
+from databaseDTO import block_is_in_db, block_is_intirely_inserted, block_is_intirely_inserted_by_height, bootstrap_db, clean_insert, close_db, dirty_insert, get_block_height, get_prev_block, max_block_h, min_block_h
 from progress.bar import Bar
 
 
@@ -29,7 +32,7 @@ def http_request(type,block_hash):
             try_num+=1
 
 
-# MY BEST MASTERPIECE -> ELEGANT AS F... hahaha (V.3 - iterative check including an enough integrity check)
+# MY BEST MASTERPIECE -> ELEGANT AS F.. (V.3 - iterative fetch including an enough integrity check)
 
 def iterative_fetch():
     #Check integrity of local blockchain
@@ -40,7 +43,7 @@ def iterative_fetch():
     curr_heigh = last_b_header['Height']
     curr_hash = last_b_header['BlockHashHex']
 
-    with Bar('Fetching:',max = curr_heigh) as bar:
+    with Bar('Fetching:',max = curr_heigh,) as bar:
         while(curr_heigh>0):
             if(curr_heigh>max_stored_in_db or curr_heigh<min_stored_in_db):
                 curr_hash = clean_insert(http_request("fullblock",curr_hash))
@@ -62,13 +65,58 @@ def iterative_fetch():
 
 def integrity_check():
     max_stored_in_db = max_block_h()
-    while(max_stored_in_db>0):
+    current_heigh = min_stored_in_db = min_block_h()
+    while(current_heigh>=min_stored_in_db):
         if(block_is_intirely_inserted_by_height(max_stored_in_db)==False):
+            print("{} height block not entirely inserted".format(current_heigh))
             sys.exit(-1)
-        max_stored_in_db-=1
+
+        current_heigh-=1
     
-    print("Everything FINE!")
-    
+    print(" - Everything fine in block interval ({} - {}), blocks/transactions have been fully inserted! -".format(max_stored_in_db,min_stored_in_db))
+
+def start_daemon_process():
+    print("- Starting Daemon Process -")
+    pid=os.fork()
+
+    # Psycopg DOCUMENTATION
+    # The Psycopg module and the connection objects are thread-safe: many threads 
+    # can access the same database....
+    # MEANING: When fork re-establish a connection to the database
+    bootstrap_db()
+
+    if pid:
+        sys.exit(0)   
+    else:
+        #Child process
+        process = current_process()
+        process.name = 'DeSo_Fetching_Daemon'
+
+        with open('daemon_PID.txt', 'w', encoding='utf-8') as f:
+            f.write(str(os.getpid()))
+
+        #print("\n- Daemon Process started -")
+
+        while True:
+            #Get highest block inserted in DB
+            max_stored_in_db = max_block_h()
+
+            #Get highest block mined
+            last_b_header = http_request("lastblock",None)['Header']
+            curr_heigh = last_b_header['Height']
+            curr_hash = last_b_header['BlockHashHex']
+
+            #print("DB : {} - INTERNET: {}".format(max_stored_in_db,curr_heigh))
+
+            #Insert until heighest block in DB is reached
+            while(curr_heigh>max_stored_in_db):
+                curr_hash = clean_insert(http_request("fullblock",curr_hash))
+                #print("{} inserted".format(curr_heigh))
+                curr_heigh-=1
+            
+            #Wait block time interval (Deso's standard = 5 min)
+            time.sleep(5*60)
+
 
 if __name__ == '__main__':
 
@@ -81,8 +129,8 @@ if __name__ == '__main__':
     #Final integrity check
     integrity_check()
 
-    #Close DB connection
-    close_db()
+    #Start Deso fecthing daemon
+    start_daemon_process()
 
     #Particular blocks hashes:
     #00000000003e997ad827fbd44c040e7cbeddf8c5014a2128064a5879a0282196 (zicco99 ops)

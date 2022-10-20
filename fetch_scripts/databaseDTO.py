@@ -1,5 +1,6 @@
 import json
 import sys
+import time
 
 from sqlalchemy import create_engine, Column, String, Integer, func, inspect
 from sqlalchemy.orm import sessionmaker
@@ -9,8 +10,7 @@ from sqlalchemy import MetaData
 
 
 # Global vars
-engine = create_engine(
-    'postgresql://chilledpanda:chilledpanda@localhost:5432/deso_blockchain')
+engine = create_engine('postgresql://f.ziccolella:f.ziccolella@localhost:5432/deso_blockchain')
 metadata_obj = None
 session = None
 tx_infos = ['TransactionIDBase58Check', 'RawTransactionHex', 'Inputs',
@@ -81,6 +81,11 @@ def block_is_in_db(b_hash):
     block_check = session.query(Block).filter_by(block_hash=b_hash).first()
     return block_check is not None
 
+def get_block_height(b_hash):
+    global session
+    block = session.query(Block).filter_by(block_hash=b_hash).first()
+    return block.block_height
+
 def block_is_intirely_inserted(b_hash):
     global session
     b = session.query(Block).filter_by(block_hash=b_hash).first()
@@ -132,7 +137,6 @@ def insert_tx_in_db(header,tx):
     
     try:
         session.add(transaction)
-        session.commit()
     except Exception as e:
         session.rollback()
         print(e)
@@ -156,8 +160,7 @@ def bootstrap_db():
     global metadata
 
     # Establishing DB connection
-    engine = create_engine(
-        'postgresql://zicco:chilledpanda@localhost:5432/deso_blockchain')
+    engine = create_engine('postgresql://f.ziccolella:f.ziccolella@localhost:5432/deso_blockchain')
     Session = sessionmaker(bind=engine)
     session = Session()
     metadata = MetaData(bind=engine)
@@ -192,6 +195,7 @@ def close_db():
 
 # The block is not in the DB  -> all transactions should be insered
 def clean_insert(block_data):
+    global session
     header = block_data['Header']
 
     # Constructing block obj
@@ -207,7 +211,14 @@ def clean_insert(block_data):
 
     for tx in block_data["Transactions"]:
         # Insert transation into DB
-            insert_tx_in_db(header,tx)
+        insert_tx_in_db(header,tx)
+    
+    try:
+        session.commit()
+    except Exception as e:
+        session.rollback()
+        print(e)
+        exit(-1)
     
     return header['PrevBlockHashHex']
 
@@ -220,5 +231,12 @@ def dirty_insert(block_data):
         if (not tx_is_in_db(tx['TransactionIDBase58Check'])):
             # Insert transation into DB
             insert_tx_in_db(header,tx)
+    
+    try:
+        session.commit()
+    except Exception as e:
+        session.rollback()
+        print(e)
+        exit(-1)
     
     return header['PrevBlockHashHex']
