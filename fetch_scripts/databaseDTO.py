@@ -10,7 +10,7 @@ from sqlalchemy import MetaData
 
 
 # Global vars
-engine = create_engine('postgresql://<username>:<password>a@localhost:5432/<db_name>')
+engine = create_engine('postgresql://<username>:<password>a@localhost:5432/<db_name_>')
 metadata_obj = None
 session = None
 tx_infos = ['TransactionIDBase58Check', 'RawTransactionHex', 'Inputs',
