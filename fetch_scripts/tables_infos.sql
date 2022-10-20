@@ -1,4 +1,4 @@
--- psql -U postgres f.ziccolella -f C:/path/to/db_create.sql
+-- psql -U postgres <username> -f <sql_file_path>
 
 SELECT
     table_name,
