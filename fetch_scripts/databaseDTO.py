@@ -10,7 +10,7 @@ from sqlalchemy import MetaData
 
 
 # Global vars
-engine = create_engine('postgresql://f.ziccolella:f.ziccolella@localhost:5432/deso_blockchain')
+engine = create_engine('postgresql://<username>:<password>a@localhost:5432/<db_name>')
 metadata_obj = None
 session = None
 tx_infos = ['TransactionIDBase58Check', 'RawTransactionHex', 'Inputs',
@@ -160,7 +160,7 @@ def bootstrap_db():
     global metadata
 
     # Establishing DB connection
-    engine = create_engine('postgresql://f.ziccolella:f.ziccolella@localhost:5432/deso_blockchain')
+    engine = create_engine('postgresql://<username>:<password>a@localhost:5432/<db_name>')
     Session = sessionmaker(bind=engine)
     session = Session()
     metadata = MetaData(bind=engine)
