@@ -1,4 +1,4 @@
--- psql -U postgres f.ziccolella -f C:/path/to/db_create.sql
+-- psql -U postgres <user> -f <sql_file>
 
 -- Psql basic implementation is stupid, it uses operating system’s file system for its storage, so it would be better to localize the DB
 CREATE TABLESPACE deso_space OWNER <user> LOCATION '<path-of-database'
