@@ -118,7 +118,6 @@ def insert_tx_in_db(header, tx):
     if (tx_type == "ACCEPT_NFT_TRANSFER"): transaction = AcceptNFTTransfer(*params)
 
     if(transaction is None):
-        print(tx_type)
         return
 
     try:

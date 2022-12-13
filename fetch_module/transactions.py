@@ -368,7 +368,7 @@ class AcceptNFTBid(Transaction):
         self.nft_serial = metadata['AcceptNFTBidTxindexMetadata']['SerialNumber']
         self.creator_base58 = metadata['AcceptNFTBidTxindexMetadata']['NFTRoyaltiesMetadata']['CreatorPublicKeyBase58Check']
         self.coin_bonus_perc = math.ceil((metadata['AcceptNFTBidTxindexMetadata']['NFTRoyaltiesMetadata']['CreatorCoinRoyaltyNanos'] / self.amount)*100 / 10**9)
-        self.creator_bonus_perc = math.ceil((metadata['AcceptNFTBidTxindexMetadata']['NFTRoyaltiesMetadata']['CreatorRoyaltyNanos'] / self.bid_amount)*100 / 10**9)
+        self.creator_bonus_perc = math.ceil((metadata['AcceptNFTBidTxindexMetadata']['NFTRoyaltiesMetadata']['CreatorRoyaltyNanos'] / self.amount)*100 / 10**9)
 
 class CreateNFT(Transaction):
     __mapper_args__ = {'polymorphic_identity': 'CreateNFT'}
