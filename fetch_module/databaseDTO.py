@@ -9,6 +9,10 @@ from sqlalchemy import create_engine,func, inspect
 #CONFIGURATION
 USERNAME_ROLE = "f.ziccolella"
 PASSWORD_ROLE = "f.ziccolella"
+
+USERNAME_ROLE = "chilledpanda"
+PASSWORD_ROLE = "chilledpanda"
+
 DB_IP = "localhost"
 PORT = 5432
 DB_NAME = "deso_blockchain"
@@ -107,6 +111,7 @@ def insert_tx_in_db(header, tx):
     if (tx_type == "BLOCK_REWARD"):transaction = BlockReward(*params)               
     if (tx_type == "BITCOIN_EXCHANGE"): transaction = BitcoinExchange(*params)
     if (tx_type == "PRIVATE_MESSAGE"):transaction = PrivateMessage(*params)
+    if (tx_type == "MESSAGING_GROUP"):transaction = MessagingGroup(*params)
     if (tx_type == "CREATOR_COIN_TRANSFER"): transaction = CreatorCoinTransfer(*params)
     if (tx_type == "AUTHORIZE_DERIVED_KEY"): transaction = AuthorizeDerivatedKey(*params) 
     if (tx_type == "NFT_BID"): transaction = NFTBid(*params)
@@ -117,7 +122,14 @@ def insert_tx_in_db(header, tx):
     if (tx_type == "NFT_TRANSFER"): transaction = NFTTransfer(*params)
     if (tx_type == "ACCEPT_NFT_TRANSFER"): transaction = AcceptNFTTransfer(*params)
 
+    #Added only to speed up fetching
+    if (tx_type == "DAO_COIN"): transaction = DaoCoin(*params)
+    if (tx_type == "DAO_COIN_TRANSFER"): transaction = DaoCoinTransfer(*params)
+    if (tx_type == "DAO_COIN_LIMIT_ORDER"): transaction = DaoCoinLimitOrder(*params)
+
     if(transaction is None):
+        print(tx_type)
+        print(tx)
         return
 
     try:
